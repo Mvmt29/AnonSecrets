@@ -8,7 +8,7 @@
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css?family=Indie+Flower|Oswald&display=swap" rel="stylesheet">
   <!-- Bootstrap CSS -->
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6UEF1jW9W0pXw3YfCvH+gfjtka4WueNG2QFJW8WZUDnN97XCdF" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" crossorigin="anonymous">
   <style>
     html, body { height:100%; margin:0; background:#000; color:#fff; font-family:'Oswald',sans-serif; }
     .navbar { justify-content:center; }
@@ -76,13 +76,13 @@
   <!-- Footer -->
   <footer>© 2025 Anonymous Secrets — We don’t store IPs. Promise.</footer>
 
-  <!-- Bootstrap & Dependencies JS -->
-  <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha384-tsQFqpERiu2MYOGa+..." crossorigin="anonymous"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
-  <script src="https://use.fontawesome.com/releases/v5.6.3/js/all.js" integrity="sha384-XYZ" crossorigin="anonymous"></script>
+  <!-- Dependencies JS -->
+  <script src="https://code.jquery.com/jquery-3.3.1.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" crossorigin="anonymous"></script>
+  <script src="https://use.fontawesome.com/releases/v5.6.3/js/all.js" crossorigin="anonymous"></script>
 
-  <!-- Firebase v11 Modular SDK & Interaction JS -->
+  <!-- Firebase v11 & Interaction JS -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-app.js";
     import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-database.js";
@@ -114,18 +114,26 @@
     const overlayContent = document.getElementById('overlayContent');
     const overlayClose = document.getElementById('overlayClose');
 
-    function addSecretToFeed(s) {
+    // Add secret to feed with limit
+    function addSecretToFeed(s, prepend = true) {
       const div = document.createElement('div');
       div.className = 'secret-item';
       div.innerHTML = `<small>${s.category}</small><p>${s.text}</p>`;
-      feedEl.prepend(div);
+      if (prepend) feedEl.prepend(div);
+      else feedEl.appendChild(div);
+      // enforce max 10 items
+      while (feedEl.children.length > 10) {
+        feedEl.removeChild(feedEl.lastChild);
+      }
     }
 
     // Real-time listener
     onChildAdded(secretsRef, snapshot => {
       const s = snapshot.val();
       allSecrets.push(s);
-      if (filterSelect.value === 'all' || s.category === filterSelect.value) addSecretToFeed(s);
+      if (filterSelect.value === 'all' || s.category === filterSelect.value) {
+        addSecretToFeed(s);
+      }
     });
 
     // Character counter & submit enable
@@ -147,12 +155,12 @@
       submitBtn.disabled = true;
     });
 
-    // Filter handler
+    // Filter handler (show last 10 matching)
     filterSelect.addEventListener('change', () => {
       feedEl.innerHTML = '';
-      allSecrets.forEach(s => {
-        if (filterSelect.value === 'all' || s.category === filterSelect.value) addSecretToFeed(s);
-      });
+      const filtered = allSecrets.filter(s => filterSelect.value === 'all' || s.category === filterSelect.value);
+      const recent = filtered.slice(-10).reverse();
+      recent.forEach(s => addSecretToFeed(s, false));
     });
 
     // Random Secret overlay logic
