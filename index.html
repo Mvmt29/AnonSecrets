@@ -115,7 +115,7 @@
     // Character counter & submit enable
     textEl.addEventListener('input', () => {
       const len = textEl.value.length;
-      charCount.textContent = `${len}/200`;
+      charCount.textContent = `${len}/3000`;
       submitBtn.disabled = !textEl.value.trim();
     });
 
@@ -127,7 +127,7 @@
       const secret = { text, category: categorySelect.value };
       push(secretsRef, secret);
       textEl.value = '';
-      charCount.textContent = '0/200';
+      charCount.textContent = '0/3000';
       submitBtn.disabled = true;
     });
 
