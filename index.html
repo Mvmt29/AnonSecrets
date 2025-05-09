@@ -91,19 +91,8 @@
     const db = getDatabase(app);
     const secretsRef = ref(db, 'secrets');
 
-    // DOM elements
-    const feedEl = document.getElementById('feed');
-    const textEl = document.getElementById('secretText');
-    const charCount = document.getElementById('charCount');
-    const submitBtn = document.getElementById('submitBtn');
-    const categorySelect = document.getElementById('categorySelect');
-    const filterSelect = document.getElementById('filterSelect');
-    const overlay = document.getElementById('randomOverlay');
-    const overlayContent = document.getElementById('overlayContent');
-    const overlayClose = document.getElementById('overlayClose');
-
-    // Render a snapshot of secrets
     function renderSnapshot(snapshot) {
+      const feedEl = document.getElementById('feed');
       feedEl.innerHTML = '';
       const items = [];
       snapshot.forEach(child => items.push(child.val()));
@@ -115,14 +104,10 @@
       });
     }
 
-    // Load secrets by category
     async function loadSecrets(cat = 'all') {
       let q;
-      if (cat === 'all') {
-        q = query(secretsRef, limitToLast(10));
-      } else {
-        q = query(secretsRef, orderByChild('category'), equalTo(cat), limitToLast(10));
-      }
+      if (cat === 'all') q = query(secretsRef, limitToLast(10));
+      else q = query(secretsRef, orderByChild('category'), equalTo(cat), limitToLast(10));
       const snap = await get(q);
       renderSnapshot(snap);
     }
@@ -130,38 +115,41 @@
     // Initial load
     loadSecrets();
 
-    // Filter change
-    filterSelect.addEventListener('change', () => loadSecrets(filterSelect.value));
+    document.getElementById('filterSelect').addEventListener('change', e => loadSecrets(e.target.value));
 
-    // Character counter
+    const textEl = document.getElementById('secretText');
+    const charCount = document.getElementById('charCount');
+    const submitBtn = document.getElementById('submitBtn');
     textEl.addEventListener('input', () => {
       charCount.textContent = `${textEl.value.length}/3000`;
       submitBtn.disabled = !textEl.value.trim();
     });
 
-    // Submit new secret
     document.getElementById('secretForm').addEventListener('submit', async e => {
       e.preventDefault();
       const text = textEl.value.trim();
-      if (!text) return;
-      await push(secretsRef, { text, category: categorySelect.value, createdAt: Date.now() });
+      const cat = document.getElementById('categorySelect').value;
+      if (!text || cat === '') return;
+      await push(secretsRef, { text, category: cat, createdAt: Date.now() });
       textEl.value = '';
       charCount.textContent = '0/3000';
       submitBtn.disabled = true;
       loadSecrets(filterSelect.value);
     });
 
-    // Random secret from full DB
     document.getElementById('randomBtn').addEventListener('click', async () => {
       const snap = await get(secretsRef);
       const arr = [];
       snap.forEach(child => arr.push(child.val()));
       if (!arr.length) return;
       const rand = arr[Math.floor(Math.random() * arr.length)];
-      overlayContent.textContent = rand.text;
+      const overlay = document.getElementById('randomOverlay');
+      document.getElementById('overlayContent').textContent = rand.text;
       overlay.style.display = 'flex';
     });
-    overlayClose.addEventListener('click', () => overlay.style.display = 'none');
+    document.getElementById('overlayClose').addEventListener('click', () => {
+      document.getElementById('randomOverlay').style.display = 'none';
+    });
   </script>
 </body>
 </html>
