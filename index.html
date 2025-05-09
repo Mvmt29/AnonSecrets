@@ -40,7 +40,7 @@
       <textarea id="secretText" rows="3" maxlength="3000" placeholder="Type here..."></textarea>
       <span id="charCount">0/3000</span>
       <select id="categorySelect" class="form-control form-control-sm mb-2" style="display:inline-block;width:auto;">
-        <label for="categorySelect" class="d-inline-block mr-2">Select a Category:</label>
+        <option disabled selected>Select Category:</option>
         <option value="general">#general</option>
         <option value="love">#love</option>
         <option value="regret">#regret</option>
@@ -49,9 +49,9 @@
       <button type="submit" id="submitBtn" class="btn btn-outline-light ml-2" disabled>Submit</button>
       <button type="button" id="randomBtn" class="btn btn-outline-light ml-2">Random Secret</button>
     </form>
-    <div class="mt-4">
+    <div class="mt-4" style="margin-bottom: 1rem;">
       <select id="filterSelect" class="form-control form-control-sm d-inline-block ml-2" style="width:auto;">
-        <label for="filterSelect" class="d-inline-block mr-2">Filter Secrets:</label>
+        <option disabled selected>Filter Secrets:</option>
         <option value="all">All</option>
         <option value="general">#general</option>
         <option value="love">#love</option>
