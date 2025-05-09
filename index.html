@@ -29,8 +29,8 @@
   </style>
 </head>
 <body>
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <a class="navbar-brand" href="about.html"><i class="fa-theater-masks"></i> About</a>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark" style="background-color: #000;">
+    <a class="navbar-brand" href="about.html"><i class="fas fa-theater-masks"></i> About</a>
   </nav>
   <div class="content container">
     <h2>Anonymous Secrets</h2>
@@ -65,12 +65,13 @@
   </div>
   <footer>© 2025 Anonymous Secrets — We don’t store IPs. Promise.</footer>
 
-  <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.3.1.min.js" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" crossorigin="anonymous"></script>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-app.js";
-    import { getDatabase, ref, push, onChildAdded, query, limitToLast } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-database.js";
+    import { getDatabase, ref, push, query, limitToLast, onValue, get } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-database.js";
 
+    // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyC9VD0yfCty_-8d14h5iiYvJzBZruorm70",
       authDomain: "project-null-391f8.firebaseapp.com",
@@ -79,42 +80,51 @@
       storageBucket: "project-null-391f8.appspot.com",
       messagingSenderId: "852946524190",
       appId: "1:852946524190:web:d93f7bdead51ea932a760f",
-      measurementId: "G-3VDLLRCP4S"
     };
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const secretsRef = ref(db, 'secrets');
-    const lastTenRef = query(secretsRef, limitToLast(10));
+    const lastTenQuery = query(secretsRef, limitToLast(10));
 
+    const feedEl = document.getElementById('feed');
     const textEl = document.getElementById('secretText');
     const charCount = document.getElementById('charCount');
     const submitBtn = document.getElementById('submitBtn');
-    const feedEl = document.getElementById('feed');
     const categorySelect = document.getElementById('categorySelect');
     const filterSelect = document.getElementById('filterSelect');
     const overlay = document.getElementById('randomOverlay');
     const overlayContent = document.getElementById('overlayContent');
     const overlayClose = document.getElementById('overlayClose');
-    const allSecrets = [];
 
-    function addSecretToFeed(s) {
-      const div = document.createElement('div');
-      div.className = 'secret-item';
-      div.innerHTML = `<small>${s.category}</small><p>${s.text}</p>`;
-      feedEl.prepend(div);
+    let lastSnapshot = null;
+
+    function renderSnapshot() {
+      feedEl.innerHTML = '';
+      if (!lastSnapshot) return;
+      lastSnapshot.forEach(childSnap => {
+        const s = childSnap.val();
+        if (filterSelect.value === 'all' || s.category === filterSelect.value) {
+          const div = document.createElement('div');
+          div.className = 'secret-item';
+          div.innerHTML = `<small>${s.category}</small><p>${s.text}</p>`;
+          feedEl.prepend(div);
+        }
+      });
     }
 
-    onChildAdded(lastTenRef, snapshot => {
-      const s = snapshot.val();
-      allSecrets.push(s);
-      if (filterSelect.value === 'all' || s.category === filterSelect.value) addSecretToFeed(s);
+    // Listen for changes to the last 10 secrets
+    onValue(lastTenQuery, snapshot => {
+      lastSnapshot = snapshot;
+      renderSnapshot();
     });
 
+    // Character counter & submit enable
     textEl.addEventListener('input', () => {
       charCount.textContent = `${textEl.value.length}/3000`;
       submitBtn.disabled = !textEl.value.trim();
     });
 
+    // Handle form submit
     document.getElementById('secretForm').addEventListener('submit', async e => {
       e.preventDefault();
       const text = textEl.value.trim();
@@ -125,15 +135,16 @@
       submitBtn.disabled = true;
     });
 
-    filterSelect.addEventListener('change', () => {
-      feedEl.innerHTML = '';
-      const filtered = allSecrets.filter(s => filterSelect.value === 'all' || s.category === filterSelect.value);
-      filtered.slice(-10).reverse().forEach(s => addSecretToFeed(s));
-    });
+    // Filter change re-renders
+    filterSelect.addEventListener('change', renderSnapshot);
 
-    document.getElementById('randomBtn').addEventListener('click', () => {
-      if (!allSecrets.length) return;
-      const rand = allSecrets[Math.floor(Math.random() * allSecrets.length)];
+    // Random secret from full DB
+    document.getElementById('randomBtn').addEventListener('click', async () => {
+      const snap = await get(secretsRef);
+      const arr = [];
+      snap.forEach(childSnap => arr.push(childSnap.val()));
+      if (!arr.length) return;
+      const rand = arr[Math.floor(Math.random() * arr.length)];
       overlayContent.textContent = rand.text;
       overlay.style.display = 'flex';
     });
