@@ -3,87 +3,122 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Anonymous Secrets: Share and view anonymous post.">
+  <meta name="description" content="Anonymous Secrets: Share and view anonymous posts in real-time.">
   <title>Anonymous Secrets</title>
-<!-- Favicon -->
+  <!-- Favicon -->
   <link rel="icon" href="theater-masks-solid.svg" type="image/svg+xml">
-<!-- Font Awesome -->
-  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous"/>
-<!-- Google Fonts -->
+  <!-- Font Awesome -->
+  <link rel="stylesheet"
+        href="https://use.fontawesome.com/releases/v5.6.3/css/all.css"
+        integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/"
+        crossorigin="anonymous" />
+  <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css?family=Indie+Flower|Oswald&display=swap" rel="stylesheet">
-<!-- Bootstrap CSS -->
+  <!-- Bootstrap CSS -->
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" crossorigin="anonymous">
   <style>
     html, body { height:100%; margin:0; background:#000; color:#fff; font-family:'Oswald',sans-serif; }
-    .navbar { justify-content:center; }
-    .content { text-align:center; padding:2rem; }
+    .navbar { justify-content:center; background:#000 !important; }
+    .content { text-align:center; padding:2rem; margin-bottom:4rem; }
     h2 { font-family:'Indie Flower',cursive; margin-bottom:1rem; }
-    textarea { background:#222; color:#fff; border:1px solid #555; padding:.5rem; width:100%; max-width:500px; resize:vertical; transition:border-color .3s; }
+    textarea { background:#222; color:#fff; border:1px solid #555; padding:.5rem;
+               width:100%; max-width:500px; resize:vertical; transition:border-color .3s; }
     textarea:focus { border-color:#888; outline:none; }
     .btn-outline-light { transition:transform .2s; }
     .btn-outline-light:hover { transform:scale(1.05); }
     #charCount { display:block; margin-top:.5rem; }
     #feed { margin-top:2rem; max-width:600px; margin:0 auto; }
-    .secret-item { background:#111; padding:1rem; margin-bottom:1rem; border-radius:.5rem; opacity:0; animation:fadeIn .5s forwards; }
+    .secret-item { background:#111; padding:1rem; margin-bottom:1rem;
+                   border-radius:.5rem; opacity:0; animation:fadeIn .5s forwards; }
     @keyframes fadeIn { to { opacity:1; } }
-    #randomOverlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); justify-content:center; align-items:center; z-index:30000; }
-    #randomOverlay .popup { background:#111; padding:2rem; border-radius:.5rem; max-width:80%; color:#fff; position:relative; text-align:center; }
-    #randomOverlay .popup button { position:absolute; top:0.5rem; right:0.5rem; background:none; border:none; color:#fff; font-size:1.5rem; }
-    footer { background:#111; color:#888; text-align:center; padding:.5rem 0; position:fixed; bottom:0; width:100%; }
+    #randomOverlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+                     background:rgba(0,0,0,0.9); display:flex; justify-content:center;
+                     align-items:center; z-index:30000; }
+    #randomOverlay .popup { background:#111; padding:2rem; border-radius:.5rem;
+                            max-width:80%; color:#fff; position:relative; text-align:center; }
+    #randomOverlay .popup button { position:absolute; top:0.5rem; right:0.5rem;
+                                    background:none; border:none; color:#fff; font-size:1.5rem; }
+    footer { background:#111; color:#888; text-align:center; padding:.5rem 0;
+             position:fixed; bottom:0; width:100%; }
+    footer a { color:#888; text-decoration:none; margin-right:1rem; }
+    footer a:hover { color:#fff; }
   </style>
 </head>
 <body>
-  <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #000;">
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark">
     <a class="navbar-brand" href="about.html"><i class="fas fa-theater-masks"></i> About</a>
   </nav>
+
+  <!-- Main content -->
   <div class="content container">
     <h2>Anonymous Secrets</h2>
     <form id="secretForm" aria-label="Share your anonymous secret">
       <textarea id="secretText" rows="3" maxlength="3000" placeholder="Type here..."></textarea>
       <span id="charCount">0/3000</span>
-      <select id="categorySelect" class="form-control form-control-sm mb-2" style="display:inline-block;width:auto;">
-        <option disabled selected>Select Category:</option>
+      <select id="categorySelect" class="form-control form-control-sm mb-2"
+              style="display:inline-block;width:auto;">
+        <option value="" disabled selected>Select Category:</option>
         <option value="general">#general</option>
         <option value="love">#love</option>
         <option value="regret">#regret</option>
         <option value="dream">#dream</option>
       </select>
-      <button type="submit" id="submitBtn" class="btn btn-outline-light ml-2" disabled>Submit</button>
-      <button type="button" id="randomBtn" class="btn btn-outline-light ml-2">Random Secret</button>
+      <button type="submit" id="submitBtn" class="btn btn-outline-light ml-2" disabled>
+        Submit
+      </button>
+      <button type="button" id="randomBtn" class="btn btn-outline-light ml-2">
+        Random Secret
+      </button>
     </form>
+
     <div class="mt-4 mb-3">
-      <select id="filterSelect" class="form-control form-control-sm d-inline-block ml-2" style="width:auto;">
-        <option disabled selected>Filter Secrets:</option>
-        <option value="all">All</option>
+      <label for="filterSelect" class="d-inline-block mr-2">Filter Secrets:</label>
+      <select id="filterSelect" class="form-control form-control-sm d-inline-block"
+              style="width:auto;">
+        <option value="all" selected>All</option>
         <option value="general">#general</option>
         <option value="love">#love</option>
         <option value="regret">#regret</option>
         <option value="dream">#dream</option>
       </select>
     </div>
+
     <div id="feed"></div>
   </div>
+
+  <!-- Random Secret Overlay -->
   <div id="randomOverlay">
     <div class="popup">
       <button id="overlayClose" type="button">&times;</button>
       <p id="overlayContent"></p>
     </div>
   </div>
-  <!-- FOOTER -->
-  <footer class="d-flex justify-content-center align-items-center" 
-        style="background:#111; color:#888; padding:.75rem 2rem; position:fixed; bottom:0; width:100%;">
-  <a href="about.html" class="mr-3" style="color:#888; text-decoration:none;">
-    <i class="fas fa-theater-masks"></i> About</a>
-  <span>© 2025 Anonymous Secrets.</span>
-</footer>
 
+  <!-- Footer -->
+  <footer>
+    <a href="about.html"><i class="fas fa-theater-masks"></i> About</a>
+    <span>© 2025 Anonymous Secrets.</span>
+  </footer>
+
+  <!-- Dependencies JS -->
   <script src="https://code.jquery.com/jquery-3.3.1.min.js" crossorigin="anonymous"></script>
-
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" crossorigin="anonymous"></script>
 
+  <!-- Firebase + Interaction -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-app.js";
-    import { getDatabase, ref, push, query, limitToLast, onValue, get } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-database.js";
+    import {
+      getDatabase,
+      ref,
+      push,
+      query,
+      limitToLast,
+      orderByChild,
+      equalTo,
+      onValue,
+      get
+    } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-database.js";
 
     // Firebase config
     const firebaseConfig = {
@@ -97,35 +132,36 @@
     };
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    const secretsRef = ref(db, 'secrets');
+
+    // Refs & Queries
+    const secretsRef   = ref(db, 'secrets');
     const lastTenQuery = query(secretsRef, limitToLast(10));
 
-    const feedEl = document.getElementById('feed');
-    const textEl = document.getElementById('secretText');
-    const charCount = document.getElementById('charCount');
-    const submitBtn = document.getElementById('submitBtn');
-    const categorySelect = document.getElementById('categorySelect');
-    const filterSelect = document.getElementById('filterSelect');
-    const overlay = document.getElementById('randomOverlay');
+    // DOM elements
+    const feedEl         = document.getElementById('feed');
+    const textEl         = document.getElementById('secretText');
+    const charCount      = document.getElementById('charCount');
+    const submitBtn      = document.getElementById('submitBtn');
+    const categoryEl     = document.getElementById('categorySelect');
+    const filterSelect   = document.getElementById('filterSelect');
+    const overlay        = document.getElementById('randomOverlay');
     const overlayContent = document.getElementById('overlayContent');
-    const overlayClose = document.getElementById('overlayClose');
+    const overlayClose   = document.getElementById('overlayClose');
+    let lastSnapshot     = null;
 
-    let lastSnapshot = null;
-
+    // Enable submit only when text + category are present
     function updateSubmitState() {
-  const hasText = !!textEl.value.trim();
-  const hasCat  = !!categoryEl.value;
-  submitBtn.disabled = !(hasText && hasCat);
-}
+      const hasText = !!textEl.value.trim();
+      const hasCat  = !!categoryEl.value;
+      submitBtn.disabled = !(hasText && hasCat);
+    }
+    textEl.addEventListener('input', () => {
+      charCount.textContent = `${textEl.value.length}/3000`;
+      updateSubmitState();
+    });
+    categoryEl.addEventListener('change', updateSubmitState);
 
-// hook up events
-textEl.addEventListener('input', () => {
-  charCount.textContent = `${textEl.value.length}/3000`;
-  updateSubmitState();
-});
-categoryEl.addEventListener('change', updateSubmitState);
-
-    
+    // Render feed snapshot
     function renderSnapshot() {
       feedEl.innerHTML = '';
       if (!lastSnapshot) return;
@@ -140,50 +176,41 @@ categoryEl.addEventListener('change', updateSubmitState);
       });
     }
 
-    // Listen for changes to the last 10 secrets
+    // Listen for changes
     onValue(lastTenQuery, snapshot => {
       lastSnapshot = snapshot;
       renderSnapshot();
     });
 
-    // Character counter & submit enable
-    textEl.addEventListener('input', () => {
-      charCount.textContent = `${textEl.value.length}/3000`;
-      submitBtn.disabled = !textEl.value.trim();
-    });
-
-    // Handle form submit
+    // Form submission
     document.getElementById('secretForm').addEventListener('submit', async e => {
       e.preventDefault();
       const text = textEl.value.trim();
-      if (!text) return;
-      await push(secretsRef, { text, category: categorySelect.value, createdAt: Date.now() });
+      const cat  = categoryEl.value;
+      if (!text || !cat) return;
+      await push(secretsRef, { text, category: cat, createdAt: Date.now() });
       textEl.value = '';
       charCount.textContent = '0/3000';
-      submitBtn.disabled = true;
+      categoryEl.value = '';
+      updateSubmitState();
     });
 
-    // Filter change re-renders
+    // Filter change
     filterSelect.addEventListener('change', renderSnapshot);
 
-      // Random secret from full DB
-  document.getElementById('randomBtn').addEventListener('click', async () => {
-    const snap = await get(ref(db, 'secrets'));
-    const data = snap.val();
-    if (!data) return;
-
-    const all = Object.values(data);
-    const rand = all[Math.floor(Math.random() * all.length)];
-
-    document.getElementById('overlayContent').textContent = rand.text;
-    document.getElementById('randomOverlay').style.display = 'flex';
-  });
-    // Close Handler
-  document.getElementById('overlayClose').addEventListener('click', () => {
-    document.getElementById('randomOverlay').style.display = 'none';
-  });
-
-</script>
+    // Random secret from full DB
+    document.getElementById('randomBtn').addEventListener('click', async () => {
+      const snap = await get(secretsRef);
+      const data = snap.val();
+      if (!data) return;
+      const all = Object.values(data);
+      const rand = all[Math.floor(Math.random() * all.length)];
+      overlayContent.textContent = rand.text;
+      overlay.style.display = 'flex';
+    });
+    overlayClose.addEventListener('click', () => {
+      overlay.style.display = 'none';
+    });
+  </script>
 </body>
 </html>
-
