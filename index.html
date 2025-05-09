@@ -34,7 +34,7 @@
   <div class="content container">
     <h2>Anonymous Secrets</h2>
     <form id="secretForm" aria-label="Share your anonymous secret">
-      <label for="secretText">Share Your Secrets:</label><br>
+      <label for="secretText">Share Your Secret:</label><br>
       <textarea id="secretText" name="secretText" rows="3" maxlength="200" placeholder="Type here..."></textarea>
       <span id="charCount" aria-live="polite">0/200</span>
       <select id="categorySelect" class="form-control form-control-sm mb-2" style="display:inline-block;width:auto;" aria-label="Select category">
@@ -63,28 +63,30 @@
   <!-- Footer -->
   <footer>© 2025 Anonymous Secrets — We don’t store IPs. Promise.</footer>
 
-  <!-- Firebase & Scripts -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
-  <script src="https://use.fontawesome.com/releases/v5.6.3/js/all.js" integrity="sha384-XYZ" crossorigin="anonymous"></script>
-  <script>
-    // Firebase config (replace with your own)
-    const firebaseConfig = {
-  apiKey: "AIzaSyC9VD0yfCty_-8d14h5iiYvJzBZruorm70",
-  authDomain: "project-null-391f8.firebaseapp.com",
-  databaseURL: "https://project-null-391f8-default-rtdb.firebaseio.com",
-  projectId: "project-null-391f8",
-  storageBucket: "project-null-391f8.firebasestorage.app",
-  messagingSenderId: "852946524190",
-  appId: "1:852946524190:web:d93f7bdead51ea932a760f",
-  measurementId: "G-3VDLLRCP4S"
-};
-    firebase.initializeApp(firebaseConfig);
-    const dbRef = firebase.database().ref('secrets');
+  <!-- Firebase v11 Modular SDK -->
+  <script type="module">
+    // Import the functions you need from Firebase SDKs
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-app.js";
+    import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-database.js";
 
+    // Your web app's Firebase configuration (from your Firebase console)
+    const firebaseConfig = {
+      apiKey: "AIzaSyC9VD0yfCty_-8d14h5iiYvJzBZruorm70",
+      authDomain: "project-null-391f8.firebaseapp.com",
+      databaseURL: "https://project-null-391f8-default-rtdb.firebaseio.com",
+      projectId: "project-null-391f8",
+      storageBucket: "project-null-391f8.appspot.com",
+      messagingSenderId: "852946524190",
+      appId: "1:852946524190:web:d93f7bdead51ea932a760f",
+      measurementId: "G-3VDLLRCP4S"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const secretsRef = ref(db, 'secrets');
+
+    // Elements
     const textEl = document.getElementById('secretText');
     const charCount = document.getElementById('charCount');
     const submitBtn = document.getElementById('submitBtn');
@@ -93,6 +95,7 @@
     const filterSelect = document.getElementById('filterSelect');
     const allSecrets = [];
 
+    // Add secret to feed
     function addSecretToFeed(s) {
       const div = document.createElement('div');
       div.className = 'secret-item';
@@ -100,8 +103,8 @@
       feedEl.prepend(div);
     }
 
-    // Listen for new secrets in real-time
-    dbRef.on('child_added', snapshot => {
+    // Real-time listener
+    onChildAdded(secretsRef, snapshot => {
       const s = snapshot.val();
       allSecrets.push(s);
       if (filterSelect.value === 'all' || s.category === filterSelect.value) {
@@ -109,34 +112,37 @@
       }
     });
 
-    // Update char count and button state
+    // Character counter & submit enable
     textEl.addEventListener('input', () => {
       const len = textEl.value.length;
       charCount.textContent = `${len}/200`;
       submitBtn.disabled = !textEl.value.trim();
     });
 
-    // Handle form submit
+    // Form submit
     document.getElementById('secretForm').addEventListener('submit', e => {
       e.preventDefault();
       const text = textEl.value.trim();
       if (!text) return;
       const secret = { text, category: categorySelect.value };
-      dbRef.push(secret);
+      push(secretsRef, secret);
       textEl.value = '';
       charCount.textContent = '0/200';
       submitBtn.disabled = true;
     });
 
-    // Filter handler
+    // Filter
     filterSelect.addEventListener('change', () => {
       feedEl.innerHTML = '';
       allSecrets.forEach(s => {
-        if (filterSelect.value === 'all' || s.category === filterSelect.value) {
-          addSecretToFeed(s);
-        }
+        if (filterSelect.value === 'all' || s.category === filterSelect.value) addSecretToFeed(s);
       });
     });
   </script>
+  <!-- Bootstrap & FontAwesome JS -->
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+  <script src="https://use.fontawesome.com/releases/v5.6.3/js/all.js" integrity="sha384-XYZ" crossorigin="anonymous"></script>
 </body>
 </html>
