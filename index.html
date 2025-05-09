@@ -22,7 +22,6 @@
     #feed { margin-top:2rem; max-width:600px; margin:0 auto; }
     .secret-item { background:#111; padding:1rem; margin-bottom:1rem; border-radius:.5rem; opacity:0; animation:fadeIn .5s forwards; }
     @keyframes fadeIn { to { opacity:1; } }
-    /* Custom overlay popup */
     #randomOverlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); justify-content:center; align-items:center; z-index:30000; }
     #randomOverlay .popup { background:#111; padding:2rem; border-radius:.5rem; max-width:80%; color:#fff; position:relative; text-align:center; }
     #randomOverlay .popup button { position:absolute; top:0.5rem; right:0.5rem; background:none; border:none; color:#fff; font-size:1.5rem; }
@@ -30,19 +29,15 @@
   </style>
 </head>
 <body>
-  <!-- NAVBAR -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <a class="navbar-brand" href="#"><i class="fa-theater-masks"></i> Anonymous Secrets</a>
-    <a class="navbar-brand" href="about.html"></i> About</a>
+    <a class="navbar-brand" href="about.html"><i class="fa-theater-masks"></i> About</a>
   </nav>
-
   <div class="content container">
     <h2>Anonymous Secrets</h2>
     <form id="secretForm" aria-label="Share your anonymous secret">
-      <label for="secretText">Share Your Thoughts:</label><br>
-      <textarea id="secretText" name="secretText" rows="3" maxlength="3000" placeholder="Type here..."></textarea>
-      <span id="charCount" aria-live="polite">0/3000</span>
-      <select id="categorySelect" class="form-control form-control-sm mb-2" style="display:inline-block;width:auto;" aria-label="Select category">
+      <textarea id="secretText" rows="3" maxlength="3000" placeholder="Type here..."></textarea>
+      <span id="charCount">0/3000</span>
+      <select id="categorySelect" class="form-control form-control-sm mb-2" style="display:inline-block;width:auto;">
         <option value="general">#general</option>
         <option value="love">#love</option>
         <option value="regret">#regret</option>
@@ -51,10 +46,8 @@
       <button type="submit" id="submitBtn" class="btn btn-outline-light ml-2" disabled>Submit</button>
       <button type="button" id="randomBtn" class="btn btn-outline-light ml-2">Random Secret</button>
     </form>
-
     <div class="mt-4">
-      <label for="filterSelect">Filter by category:</label>
-      <select id="filterSelect" class="form-control form-control-sm d-inline-block ml-2" style="width:auto;" aria-label="Filter secrets by category">
+      <select id="filterSelect" class="form-control form-control-sm d-inline-block ml-2" style="width:auto;">
         <option value="all">All</option>
         <option value="general">#general</option>
         <option value="love">#love</option>
@@ -62,31 +55,21 @@
         <option value="dream">#dream</option>
       </select>
     </div>
-
     <div id="feed"></div>
   </div>
-
-  <!-- Custom Random Secret Overlay -->
   <div id="randomOverlay">
     <div class="popup">
-      <button id="overlayClose" aria-label="Close popup">&times;</button>
+      <button id="overlayClose">&times;</button>
       <p id="overlayContent"></p>
     </div>
   </div>
-
-  <!-- Footer -->
   <footer>© 2025 Anonymous Secrets — We don’t store IPs. Promise.</footer>
 
-  <!-- Dependencies JS -->
-  <script src="https://code.jquery.com/jquery-3.3.1.min.js" crossorigin="anonymous"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" crossorigin="anonymous"></script>
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" crossorigin="anonymous"></script>
-  <script src="https://use.fontawesome.com/releases/v5.6.3/js/all.js" crossorigin="anonymous"></script>
-
-  <!-- Firebase v11 & Interaction JS -->
+  <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"></script>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-app.js";
-    import { getDatabase, ref, push, onChildAdded, serverTimestamp, remove } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-database.js";
+    import { getDatabase, ref, push, onChildAdded, query, limitToLast } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyC9VD0yfCty_-8d14h5iiYvJzBZruorm70",
@@ -98,11 +81,10 @@
       appId: "1:852946524190:web:d93f7bdead51ea932a760f",
       measurementId: "G-3VDLLRCP4S"
     };
-
-    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const secretsRef = ref(db, 'secrets');
+    const lastTenRef = query(secretsRef, limitToLast(10));
 
     const textEl = document.getElementById('secretText');
     const charCount = document.getElementById('charCount');
@@ -110,69 +92,45 @@
     const feedEl = document.getElementById('feed');
     const categorySelect = document.getElementById('categorySelect');
     const filterSelect = document.getElementById('filterSelect');
-    const allSecrets = [];
     const overlay = document.getElementById('randomOverlay');
     const overlayContent = document.getElementById('overlayContent');
     const overlayClose = document.getElementById('overlayClose');
+    const allSecrets = [];
 
-    const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
-
-    // Cleanup old secrets
-    onChildAdded(secretsRef, snapshot => {
-      const key = snapshot.key;
-      const s = snapshot.val();
-      // If createdAt exists, check timestamp
-      if (s.createdAt && Date.now() - s.createdAt > THIRTY_DAYS_MS) {
-        // remove old secret
-        remove(ref(db, `secrets/${key}`));
-        return;
-      }
-      allSecrets.push({ ...s, key });
-      if (filterSelect.value === 'all' || s.category === filterSelect.value) {
-        addSecretToFeed(s);
-      }
-    });
-
-    // Add secret to feed with limit
-    function addSecretToFeed(s, prepend = true) {
+    function addSecretToFeed(s) {
       const div = document.createElement('div');
       div.className = 'secret-item';
       div.innerHTML = `<small>${s.category}</small><p>${s.text}</p>`;
-      if (prepend) feedEl.prepend(div);
-      else feedEl.appendChild(div);
-      while (feedEl.children.length > 10) {
-        feedEl.removeChild(feedEl.lastChild);
-      }
+      feedEl.prepend(div);
     }
 
-    // Character counter & submit enable
+    onChildAdded(lastTenRef, snapshot => {
+      const s = snapshot.val();
+      allSecrets.push(s);
+      if (filterSelect.value === 'all' || s.category === filterSelect.value) addSecretToFeed(s);
+    });
+
     textEl.addEventListener('input', () => {
-      const len = textEl.value.length;
-      charCount.textContent = `${len}/3000`;
+      charCount.textContent = `${textEl.value.length}/3000`;
       submitBtn.disabled = !textEl.value.trim();
     });
 
-    // Form submit with timestamp
-    document.getElementById('secretForm').addEventListener('submit', e => {
+    document.getElementById('secretForm').addEventListener('submit', async e => {
       e.preventDefault();
       const text = textEl.value.trim();
       if (!text) return;
-      const newRef = push(secretsRef);
-      newRef.set({ text, category: categorySelect.value, createdAt: Date.now() });
+      await push(secretsRef, { text, category: categorySelect.value, createdAt: Date.now() });
       textEl.value = '';
       charCount.textContent = '0/3000';
       submitBtn.disabled = true;
     });
 
-    // Filter handler
     filterSelect.addEventListener('change', () => {
       feedEl.innerHTML = '';
       const filtered = allSecrets.filter(s => filterSelect.value === 'all' || s.category === filterSelect.value);
-      const recent = filtered.slice(-10).reverse();
-      recent.forEach(s => addSecretToFeed(s, false));
+      filtered.slice(-10).reverse().forEach(s => addSecretToFeed(s));
     });
 
-    // Random Secret overlay logic
     document.getElementById('randomBtn').addEventListener('click', () => {
       if (!allSecrets.length) return;
       const rand = allSecrets[Math.floor(Math.random() * allSecrets.length)];
