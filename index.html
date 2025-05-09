@@ -86,7 +86,7 @@
   <!-- Firebase v11 & Interaction JS -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-app.js";
-    import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-database.js";
+    import { getDatabase, ref, push, onChildAdded, serverTimestamp, remove } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyC9VD0yfCty_-8d14h5iiYvJzBZruorm70",
@@ -115,6 +115,24 @@
     const overlayContent = document.getElementById('overlayContent');
     const overlayClose = document.getElementById('overlayClose');
 
+    const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+
+    // Cleanup old secrets
+    onChildAdded(secretsRef, snapshot => {
+      const key = snapshot.key;
+      const s = snapshot.val();
+      // If createdAt exists, check timestamp
+      if (s.createdAt && Date.now() - s.createdAt > THIRTY_DAYS_MS) {
+        // remove old secret
+        remove(ref(db, `secrets/${key}`));
+        return;
+      }
+      allSecrets.push({ ...s, key });
+      if (filterSelect.value === 'all' || s.category === filterSelect.value) {
+        addSecretToFeed(s);
+      }
+    });
+
     // Add secret to feed with limit
     function addSecretToFeed(s, prepend = true) {
       const div = document.createElement('div');
@@ -122,20 +140,10 @@
       div.innerHTML = `<small>${s.category}</small><p>${s.text}</p>`;
       if (prepend) feedEl.prepend(div);
       else feedEl.appendChild(div);
-      // enforce max 10 items
       while (feedEl.children.length > 10) {
         feedEl.removeChild(feedEl.lastChild);
       }
     }
-
-    // Real-time listener
-    onChildAdded(secretsRef, snapshot => {
-      const s = snapshot.val();
-      allSecrets.push(s);
-      if (filterSelect.value === 'all' || s.category === filterSelect.value) {
-        addSecretToFeed(s);
-      }
-    });
 
     // Character counter & submit enable
     textEl.addEventListener('input', () => {
@@ -144,19 +152,19 @@
       submitBtn.disabled = !textEl.value.trim();
     });
 
-    // Form submit
+    // Form submit with timestamp
     document.getElementById('secretForm').addEventListener('submit', e => {
       e.preventDefault();
       const text = textEl.value.trim();
       if (!text) return;
-      const secret = { text, category: categorySelect.value };
-      push(secretsRef, secret);
+      const newRef = push(secretsRef);
+      newRef.set({ text, category: categorySelect.value, createdAt: Date.now() });
       textEl.value = '';
       charCount.textContent = '0/3000';
       submitBtn.disabled = true;
     });
 
-    // Filter handler (show last 10 matching)
+    // Filter handler
     filterSelect.addEventListener('change', () => {
       feedEl.innerHTML = '';
       const filtered = allSecrets.filter(s => filterSelect.value === 'all' || s.category === filterSelect.value);
