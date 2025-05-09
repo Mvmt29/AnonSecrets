@@ -1,77 +1,68 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8"
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>4EVERGOON</title>
-
-<link rel="stylesheet" type="text/css" href="C:\Users\The Flash\Desktop\WebDev\bootstrap-4.2.1-dist\css\bootstrap.css">
-
-<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
-
-<link rel="stylesheet" type="text/css" href="C:\Users\The Flash\Desktop\WebDev\CSS\goon.css">
-
-<link href="https://fonts.googleapis.com/css?family=Indie+Flower|Oswald" rel="stylesheet">
-
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Anonymous Secrets</title>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6UEF1jW9W0pXw3YfCvH+gfjtka4WueNG2QFJW8WZUDnN97XCdF" crossorigin="anonymous">
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      background-color: #000;
+      color: #fff;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+    }
+    /* Center content vertically and horizontally */
+    .content {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+    /* Style form input */
+    input[type="text"] {
+      background-color: #222;
+      color: #fff;
+      border: 1px solid #555;
+      padding: .5rem;
+      margin-top: .5rem;
+      width: 100%;
+      max-width: 300px;
+    }
+    input[type="text"]::placeholder {
+      color: #888;
+    }
+    /* Navbar brand centered */
+    .navbar {
+      justify-content: center;
+    }
+  </style>
 </head>
 <body>
+  <!-- NAVBAR -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" href="#"><i class="fas fa-theater-masks"></i> Anonymous Secrets</a>
+  </nav>
 
-<!-- NAVBAR---------------------------------- -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
-	<div class="container">
-  <a class="navbar-brand texts" href="C:\Users\The Flash\Desktop\WebDev\HTML\goon.html"><i class="fas fa-theater-masks"></i>Anonymous Secrets</a>
-  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-    <span class="navbar-toggler-icon"></span>
-  </button>
-  
+  <!-- MAIN CONTENT -->
+  <div class="content container">
+    <h2>Anonymous Secrets</h2>
+    <form>
+      <label for="fname">Share Your Thoughts:</label><br>
+      <input type="text" id="fname" name="fname" placeholder="Type here...">
+    </form>
+  </div>
 
-
-<!-- ---------------------------------- -->
-
-<div class="container">
-	<div class="row">
-		<div class="col-lg-12">
-			<div class="content">
-				<h2>Anonymous Secrets</h2>
-				
-        <form>
-            <label for="fname">Share Your Thoughts:</label><br>
-            <input type="text" id="fname" name="fname"><br>
-        </form>
-        
-        
-        <!-- <a href="/Users/flash/Desktop/WebDev/HTML/gallary.html" class="btn btnc btn-lg"><i class="fas fa-theater-masks"></i>Secrets</a>
-        <!-- <button class="btn btnc btn-lg"><i class="fas fa-theater-masks"></i> Shop</button> -->
-			</div>
-		</div>
-	</div>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<!-- JQUERY/JAVASCRIPT FOR NAVBAR--------------- -->
-<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+  <!-- SCRIPTS -->
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+  <!-- Font Awesome -->
+  <script src="https://use.fontawesome.com/releases/v5.6.3/js/all.js" integrity="sha384-XYZ" crossorigin="anonymous"></script>
 </body>
 </html>
