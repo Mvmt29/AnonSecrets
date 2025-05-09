@@ -148,7 +148,7 @@
     // Filter change re-renders
     filterSelect.addEventListener('change', renderSnapshot);
 
-    // Random secret from full DB — getting the raw object
+    // Random secret from full DB
 document.getElementById('randomBtn').addEventListener('click', async () => {
   const snap = await get(ref(db, 'secrets'));
   const data = snap.val();               // data is now an object: { key1: {…}, key2: {…}, … }
@@ -160,8 +160,8 @@ document.getElementById('randomBtn').addEventListener('click', async () => {
   const rand = all[Math.floor(Math.random() * all.length)];
 
   // Show it
-  document.getElementById('overlayContent').textContent = rand.text;
-  document.getElementById('randomOverlay').style.display = 'flex';
+  document.getElementById('overlayClose').addEventListener('click', () => {
+    document.getElementById('randomOverlay').style.display = 'flex';
 });
   </script>
 
