@@ -5,16 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Anonymous Secrets: Share and view anonymous posts in real-time.">
   <title>Anonymous Secrets</title>
-  <!-- Font Awesome -->
+<!-- Font Awesome -->
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous"/>
-  <!-- Google Fonts -->
+<!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css?family=Indie+Flower|Oswald&display=swap" rel="stylesheet">
-  <!-- Bootstrap CSS -->
+<!-- Bootstrap CSS -->
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" crossorigin="anonymous">
   <style>
     html, body { height:100%; margin:0; background:#000; color:#fff; font-family:'Oswald',sans-serif; }
-    .navbar { background:#000 !important; }
-    .content { text-align:center; padding:2rem; margin-bottom:3rem; }
+    .navbar { justify-content:center; }
+    .content { text-align:center; padding:2rem; }
     h2 { font-family:'Indie Flower',cursive; margin-bottom:1rem; }
     textarea { background:#222; color:#fff; border:1px solid #555; padding:.5rem; width:100%; max-width:500px; resize:vertical; transition:border-color .3s; }
     textarea:focus { border-color:#888; outline:none; }
@@ -24,14 +24,14 @@
     #feed { margin-top:2rem; max-width:600px; margin:0 auto; }
     .secret-item { background:#111; padding:1rem; margin-bottom:1rem; border-radius:.5rem; opacity:0; animation:fadeIn .5s forwards; }
     @keyframes fadeIn { to { opacity:1; } }
-    #randomOverlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); display:flex; justify-content:center; align-items:center; z-index:30000; }
+    #randomOverlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); justify-content:center; align-items:center; z-index:30000; }
     #randomOverlay .popup { background:#111; padding:2rem; border-radius:.5rem; max-width:80%; color:#fff; position:relative; text-align:center; }
     #randomOverlay .popup button { position:absolute; top:0.5rem; right:0.5rem; background:none; border:none; color:#fff; font-size:1.5rem; }
     footer { background:#111; color:#888; text-align:center; padding:.5rem 0; position:fixed; bottom:0; width:100%; }
   </style>
 </head>
 <body>
-  <nav class="navbar navbar-expand-lg navbar-dark">
+  <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #000;">
     <a class="navbar-brand" href="about.html"><i class="fas fa-theater-masks"></i> About</a>
   </nav>
   <div class="content container">
@@ -50,9 +50,9 @@
       <button type="button" id="randomBtn" class="btn btn-outline-light ml-2">Random Secret</button>
     </form>
     <div class="mt-4 mb-3">
-      <label for="filterSelect" class="d-inline-block mr-2">Filter Secrets:</label>
-      <select id="filterSelect" class="form-control form-control-sm d-inline-block" style="width:auto;">
-        <option value="all" selected>All</option>
+      <select id="filterSelect" class="form-control form-control-sm d-inline-block ml-2" style="width:auto;">
+        <option disabled selected>Filter Secrets:</option>
+        <option value="all">All</option>
         <option value="general">#general</option>
         <option value="love">#love</option>
         <option value="regret">#regret</option>
@@ -67,17 +67,21 @@
       <p id="overlayContent"></p>
     </div>
   </div>
+  <!-- FOOTER -->
   <footer>
     <a href="about.html"><i class="fas fa-theater-masks"></i> About</a>
-    <span>© 2025 Anonymous Secrets — We don’t store IPs. Messages auto-delete after 30 days.</span>
+    <span>© 2025 Anonymous Secrets — We don’t store IPs. Promise.</span>
   </footer>
 
   <script src="https://code.jquery.com/jquery-3.3.1.min.js" crossorigin="anonymous"></script>
+
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" crossorigin="anonymous"></script>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-app.js";
-    import { getDatabase, ref, push, query, limitToLast, orderByChild, equalTo, get } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-database.js";
+    import { getDatabase, ref, push, query, limitToLast, onValue, get } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-database.js";
 
+    // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyC9VD0yfCty_-8d14h5iiYvJzBZruorm70",
       authDomain: "project-null-391f8.firebaseapp.com",
@@ -90,66 +94,72 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const secretsRef = ref(db, 'secrets');
+    const lastTenQuery = query(secretsRef, limitToLast(10));
 
-    function renderSnapshot(snapshot) {
-      const feedEl = document.getElementById('feed');
-      feedEl.innerHTML = '';
-      const items = [];
-      snapshot.forEach(child => items.push(child.val()));
-      items.reverse().forEach(s => {
-        const div = document.createElement('div');
-        div.className = 'secret-item';
-        div.innerHTML = `<small>${s.category}</small><p>${s.text}</p>`;
-        feedEl.appendChild(div);
-      });
-    }
-
-    async function loadSecrets(cat = 'all') {
-      let q;
-      if (cat === 'all') q = query(secretsRef, limitToLast(10));
-      else q = query(secretsRef, orderByChild('category'), equalTo(cat), limitToLast(10));
-      const snap = await get(q);
-      renderSnapshot(snap);
-    }
-
-    // Initial load
-    loadSecrets();
-
-    document.getElementById('filterSelect').addEventListener('change', e => loadSecrets(e.target.value));
-
+    const feedEl = document.getElementById('feed');
     const textEl = document.getElementById('secretText');
     const charCount = document.getElementById('charCount');
     const submitBtn = document.getElementById('submitBtn');
+    const categorySelect = document.getElementById('categorySelect');
+    const filterSelect = document.getElementById('filterSelect');
+    const overlay = document.getElementById('randomOverlay');
+    const overlayContent = document.getElementById('overlayContent');
+    const overlayClose = document.getElementById('overlayClose');
+
+    let lastSnapshot = null;
+
+    function renderSnapshot() {
+      feedEl.innerHTML = '';
+      if (!lastSnapshot) return;
+      lastSnapshot.forEach(childSnap => {
+        const s = childSnap.val();
+        if (filterSelect.value === 'all' || s.category === filterSelect.value) {
+          const div = document.createElement('div');
+          div.className = 'secret-item';
+          div.innerHTML = `<small>${s.category}</small><p>${s.text}</p>`;
+          feedEl.prepend(div);
+        }
+      });
+    }
+
+    // Listen for changes to the last 10 secrets
+    onValue(lastTenQuery, snapshot => {
+      lastSnapshot = snapshot;
+      renderSnapshot();
+    });
+
+    // Character counter & submit enable
     textEl.addEventListener('input', () => {
       charCount.textContent = `${textEl.value.length}/3000`;
       submitBtn.disabled = !textEl.value.trim();
     });
 
+    // Handle form submit
     document.getElementById('secretForm').addEventListener('submit', async e => {
       e.preventDefault();
       const text = textEl.value.trim();
-      const cat = document.getElementById('categorySelect').value;
-      if (!text || cat === '') return;
-      await push(secretsRef, { text, category: cat, createdAt: Date.now() });
+      if (!text) return;
+      await push(secretsRef, { text, category: categorySelect.value, createdAt: Date.now() });
       textEl.value = '';
       charCount.textContent = '0/3000';
       submitBtn.disabled = true;
-      loadSecrets(filterSelect.value);
     });
 
+    // Filter change re-renders
+    filterSelect.addEventListener('change', renderSnapshot);
+
+    // Random secret from full DB
     document.getElementById('randomBtn').addEventListener('click', async () => {
       const snap = await get(secretsRef);
       const arr = [];
-      snap.forEach(child => arr.push(child.val()));
+      snap.forEach(childSnap => arr.push(childSnap.val()));
       if (!arr.length) return;
       const rand = arr[Math.floor(Math.random() * arr.length)];
-      const overlay = document.getElementById('randomOverlay');
-      document.getElementById('overlayContent').textContent = rand.text;
+      overlayContent.textContent = rand.text;
       overlay.style.display = 'flex';
     });
-    document.getElementById('overlayClose').addEventListener('click', () => {
-      document.getElementById('randomOverlay').style.display = 'none';
-    });
+    overlayClose.addEventListener('click', () => overlay.style.display = 'none');
   </script>
+
 </body>
 </html>
