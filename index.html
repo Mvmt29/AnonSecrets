@@ -3,49 +3,26 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Anonymous Secrets: Share your thoughts anonymously and read others' secrets.">
+  <meta name="description" content="Anonymous Secrets: Share and view anonymous posts in real-time.">
   <title>Anonymous Secrets</title>
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css?family=Indie+Flower|Oswald&display=swap" rel="stylesheet">
   <!-- Bootstrap CSS -->
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6UEF1jW9W0pXw3YfCvH+gfjtka4WueNG2QFJW8WZUDnN97XCdF" crossorigin="anonymous">
   <style>
-    html, body {
-      height: 100%;
-      margin: 0;
-      background-color: #000;
-      color: #fff;
-      font-family: 'Oswald', sans-serif;
-    }
-    .navbar { justify-content: center; }
-    .content { text-align: center; padding: 2rem; }
-    h2 { font-family: 'Indie Flower', cursive; margin-bottom: 1rem; }
-    textarea {
-      background-color: #222;
-      color: #fff;
-      border: 1px solid #555;
-      padding: .5rem;
-      width: 100%;
-      max-width: 500px;
-      resize: vertical;
-      transition: border-color .3s;
-    }
-    textarea:focus { border-color: #888; outline: none; }
-    .btn-outline-light { transition: transform .2s; }
-    .btn-outline-light:hover { transform: scale(1.05); }
-    #charCount { display: block; margin-top: .5rem; }
-    #feed { margin-top: 2rem; max-width: 600px; margin-left: auto; margin-right: auto; }
-    .secret-item { background: #111; padding: 1rem; margin-bottom: 1rem; border-radius: .5rem; opacity: 0; animation: fadeIn 0.5s forwards; }
-    @keyframes fadeIn { to { opacity: 1; } }
-    footer {
-      background: #111;
-      color: #888;
-      text-align: center;
-      padding: .5rem 0;
-      position: fixed;
-      bottom: 0;
-      width: 100%;
-    }
+    html, body { height:100%; margin:0; background:#000; color:#fff; font-family:'Oswald',sans-serif; }
+    .navbar { justify-content:center; }
+    .content { text-align:center; padding:2rem; }
+    h2 { font-family:'Indie Flower',cursive; margin-bottom:1rem; }
+    textarea { background:#222; color:#fff; border:1px solid #555; padding:.5rem; width:100%; max-width:500px; resize:vertical; transition:border-color .3s; }
+    textarea:focus { border-color:#888; outline:none; }
+    .btn-outline-light { transition:transform .2s; }
+    .btn-outline-light:hover { transform:scale(1.05); }
+    #charCount { display:block; margin-top:.5rem; }
+    #feed { margin-top:2rem; max-width:600px; margin:0 auto; }
+    .secret-item { background:#111; padding:1rem; margin-bottom:1rem; border-radius:.5rem; opacity:0; animation:fadeIn .5s forwards; }
+    @keyframes fadeIn { to { opacity:1; } }
+    footer { background:#111; color:#888; text-align:center; padding:.5rem 0; position:fixed; bottom:0; width:100%; }
   </style>
 </head>
 <body>
@@ -54,25 +31,21 @@
     <a class="navbar-brand" href="#"><i class="fas fa-theater-masks"></i> Anonymous Secrets</a>
   </nav>
 
-  <!-- MAIN CONTENT -->
   <div class="content container">
     <h2>Anonymous Secrets</h2>
     <form id="secretForm" aria-label="Share your anonymous secret">
-      <label for="secretText">Share Your Thoughts:</label><br>
+      <label for="secretText">Share Your Secrets:</label><br>
       <textarea id="secretText" name="secretText" rows="3" maxlength="200" placeholder="Type here..."></textarea>
       <span id="charCount" aria-live="polite">0/200</span>
-      <label for="categorySelect" class="sr-only">Category</label>
-      <select id="categorySelect" class="form-control form-control-sm mb-2" style="display:inline-block; width:auto;" aria-label="Select category">
+      <select id="categorySelect" class="form-control form-control-sm mb-2" style="display:inline-block;width:auto;" aria-label="Select category">
         <option value="general">#general</option>
         <option value="love">#love</option>
         <option value="regret">#regret</option>
         <option value="dream">#dream</option>
       </select>
       <button type="submit" id="submitBtn" class="btn btn-outline-light ml-2" disabled>Submit</button>
-      <button type="button" id="randomBtn" class="btn btn-outline-light ml-2">Random Secret</button>
     </form>
 
-    <!-- Filter -->
     <div class="mt-4">
       <label for="filterSelect">Filter by category:</label>
       <select id="filterSelect" class="form-control form-control-sm d-inline-block ml-2" style="width:auto;" aria-label="Filter secrets by category">
@@ -84,91 +57,86 @@
       </select>
     </div>
 
-    <!-- Secret Feed -->
     <div id="feed"></div>
   </div>
 
-  <!-- Random Secret Modal -->
-  <div class="modal fade" id="randomModal" tabindex="-1" role="dialog" aria-labelledby="randomModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-      <div class="modal-content bg-dark text-white">
-        <div class="modal-header">
-          <h5 class="modal-title" id="randomModalLabel">Secret of the Moment</h5>
-          <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body" id="randomContent"></div>
-      </div>
-    </div>
-  </div>
+  <!-- Footer -->
+  <footer>© 2025 Anonymous Secrets — We don’t store IPs. Promise.</footer>
 
-  <!-- SCRIPTS -->
+  <!-- Firebase & Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
   <script src="https://use.fontawesome.com/releases/v5.6.3/js/all.js" integrity="sha384-XYZ" crossorigin="anonymous"></script>
   <script>
-    // Load saved input
+    // Firebase config (replace with your own)
+    const firebaseConfig = {
+  apiKey: "AIzaSyC9VD0yfCty_-8d14h5iiYvJzBZruorm70",
+  authDomain: "project-null-391f8.firebaseapp.com",
+  databaseURL: "https://project-null-391f8-default-rtdb.firebaseio.com",
+  projectId: "project-null-391f8",
+  storageBucket: "project-null-391f8.firebasestorage.app",
+  messagingSenderId: "852946524190",
+  appId: "1:852946524190:web:d93f7bdead51ea932a760f",
+  measurementId: "G-3VDLLRCP4S"
+};
+    firebase.initializeApp(firebaseConfig);
+    const dbRef = firebase.database().ref('secrets');
+
     const textEl = document.getElementById('secretText');
     const charCount = document.getElementById('charCount');
     const submitBtn = document.getElementById('submitBtn');
     const feedEl = document.getElementById('feed');
     const categorySelect = document.getElementById('categorySelect');
     const filterSelect = document.getElementById('filterSelect');
-    let secrets = JSON.parse(localStorage.getItem('secrets')) || [];
+    const allSecrets = [];
 
-    function updateFeed() {
-      feedEl.innerHTML = '';
-      const filter = filterSelect.value;
-      secrets.filter(s => filter === 'all' || s.category === filter)
-             .forEach(s => {
-        const div = document.createElement('div');
-        div.className = 'secret-item';
-        div.innerHTML = `<small>${s.category}</small><p>${s.text}</p>`;
-        feedEl.prepend(div);
-      });
+    function addSecretToFeed(s) {
+      const div = document.createElement('div');
+      div.className = 'secret-item';
+      div.innerHTML = `<small>${s.category}</small><p>${s.text}</p>`;
+      feedEl.prepend(div);
     }
 
-    // Initialize feed
-    updateFeed();
+    // Listen for new secrets in real-time
+    dbRef.on('child_added', snapshot => {
+      const s = snapshot.val();
+      allSecrets.push(s);
+      if (filterSelect.value === 'all' || s.category === filterSelect.value) {
+        addSecretToFeed(s);
+      }
+    });
 
-    // Load saved draft
-    textEl.value = localStorage.getItem('draft') || '';
-    charCount.textContent = `${textEl.value.length}/200`;
-    submitBtn.disabled = !textEl.value.trim();
-
+    // Update char count and button state
     textEl.addEventListener('input', () => {
       const len = textEl.value.length;
       charCount.textContent = `${len}/200`;
-      localStorage.setItem('draft', textEl.value);
       submitBtn.disabled = !textEl.value.trim();
     });
 
+    // Handle form submit
     document.getElementById('secretForm').addEventListener('submit', e => {
       e.preventDefault();
       const text = textEl.value.trim();
       if (!text) return;
       const secret = { text, category: categorySelect.value };
-      secrets.push(secret);
-      localStorage.setItem('secrets', JSON.stringify(secrets));
+      dbRef.push(secret);
       textEl.value = '';
-      localStorage.removeItem('draft');
       charCount.textContent = '0/200';
       submitBtn.disabled = true;
-      updateFeed();
     });
 
-    // Random secret
-    document.getElementById('randomBtn').addEventListener('click', () => {
-      if (!secrets.length) return;
-      const rand = secrets[Math.floor(Math.random() * secrets.length)];
-      document.getElementById('randomContent').textContent = rand.text;
-      $('#randomModal').modal('show');
+    // Filter handler
+    filterSelect.addEventListener('change', () => {
+      feedEl.innerHTML = '';
+      allSecrets.forEach(s => {
+        if (filterSelect.value === 'all' || s.category === filterSelect.value) {
+          addSecretToFeed(s);
+        }
+      });
     });
-
-    // Filter change
-    filterSelect.addEventListener('change', updateFeed);
   </script>
 </body>
 </html>
