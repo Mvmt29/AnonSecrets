@@ -148,17 +148,21 @@
     // Filter change re-renders
     filterSelect.addEventListener('change', renderSnapshot);
 
-    // Random secret from full DB
-    document.getElementById('randomBtn').addEventListener('click', async () => {
-      const snap = await get(secretsRef);
-      const arr = [];
-      snap.forEach(childSnap => arr.push(childSnap.val()));
-      if (!arr.length) return;
-      const rand = arr[Math.floor(Math.random() * arr.length)];
-      overlayContent.textContent = rand.text;
-      overlay.style.display = 'flex';
-    });
-    overlayClose.addEventListener('click', () => overlay.style.display = 'none');
+    // Random secret from full DB — getting the raw object
+document.getElementById('randomBtn').addEventListener('click', async () => {
+  const snap = await get(ref(db, 'secrets'));
+  const data = snap.val();               // data is now an object: { key1: {…}, key2: {…}, … }
+  if (!data) return;
+
+  // Turn that into an array of values
+  const all = Object.values(data);
+  // Pick a random index
+  const rand = all[Math.floor(Math.random() * all.length)];
+
+  // Show it
+  document.getElementById('overlayContent').textContent = rand.text;
+  document.getElementById('randomOverlay').style.display = 'flex';
+});
   </script>
 
 </body>
