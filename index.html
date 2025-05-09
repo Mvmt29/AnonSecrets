@@ -34,7 +34,7 @@
   <div class="content container">
     <h2>Anonymous Secrets</h2>
     <form id="secretForm" aria-label="Share your anonymous secret">
-      <label for="secretText">Share Your Secret:</label><br>
+      <label for="secretText">Share Your Thoughts:</label><br>
       <textarea id="secretText" name="secretText" rows="3" maxlength="3000" placeholder="Type here..."></textarea>
       <span id="charCount" aria-live="polite">0/3000</span>
       <select id="categorySelect" class="form-control form-control-sm mb-2" style="display:inline-block;width:auto;" aria-label="Select category">
@@ -44,6 +44,7 @@
         <option value="dream">#dream</option>
       </select>
       <button type="submit" id="submitBtn" class="btn btn-outline-light ml-2" disabled>Submit</button>
+      <button type="button" id="randomBtn" class="btn btn-outline-light ml-2">Random Secret</button>
     </form>
 
     <div class="mt-4">
@@ -60,16 +61,29 @@
     <div id="feed"></div>
   </div>
 
+  <!-- Random Secret Modal -->
+  <div class="modal fade" id="randomModal" tabindex="-1" role="dialog" aria-labelledby="randomModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content bg-dark text-white">
+        <div class="modal-header">
+          <h5 class="modal-title" id="randomModalLabel">Secret of the Moment</h5>
+          <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body" id="randomContent"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- Footer -->
   <footer>© 2025 Anonymous Secrets — We don’t store IPs. Promise.</footer>
 
   <!-- Firebase v11 Modular SDK -->
   <script type="module">
-    // Import the functions you need from Firebase SDKs
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-app.js";
     import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-database.js";
 
-    // Your web app's Firebase configuration (from your Firebase console)
     const firebaseConfig = {
       apiKey: "AIzaSyC9VD0yfCty_-8d14h5iiYvJzBZruorm70",
       authDomain: "project-null-391f8.firebaseapp.com",
@@ -86,7 +100,6 @@
     const db = getDatabase(app);
     const secretsRef = ref(db, 'secrets');
 
-    // Elements
     const textEl = document.getElementById('secretText');
     const charCount = document.getElementById('charCount');
     const submitBtn = document.getElementById('submitBtn');
@@ -95,7 +108,6 @@
     const filterSelect = document.getElementById('filterSelect');
     const allSecrets = [];
 
-    // Add secret to feed
     function addSecretToFeed(s) {
       const div = document.createElement('div');
       div.className = 'secret-item';
@@ -107,9 +119,7 @@
     onChildAdded(secretsRef, snapshot => {
       const s = snapshot.val();
       allSecrets.push(s);
-      if (filterSelect.value === 'all' || s.category === filterSelect.value) {
-        addSecretToFeed(s);
-      }
+      if (filterSelect.value === 'all' || s.category === filterSelect.value) addSecretToFeed(s);
     });
 
     // Character counter & submit enable
@@ -131,12 +141,20 @@
       submitBtn.disabled = true;
     });
 
-    // Filter
+    // Filter handler
     filterSelect.addEventListener('change', () => {
       feedEl.innerHTML = '';
       allSecrets.forEach(s => {
         if (filterSelect.value === 'all' || s.category === filterSelect.value) addSecretToFeed(s);
       });
+    });
+
+    // Random Secret button
+    document.getElementById('randomBtn').addEventListener('click', () => {
+      if (!allSecrets.length) return;
+      const rand = allSecrets[Math.floor(Math.random() * allSecrets.length)];
+      document.getElementById('randomContent').textContent = rand.text;
+      $('#randomModal').modal('show');
     });
   </script>
   <!-- Bootstrap & FontAwesome JS -->
