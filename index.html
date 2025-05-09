@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Anonymous Secrets: Share and view anonymous posts.">
+  <meta name="description" content="Anonymous Secrets: Share and view anonymous posts in real-time.">
   <title>Anonymous Secrets</title>
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css?family=Indie+Flower|Oswald&display=swap" rel="stylesheet">
@@ -22,6 +22,10 @@
     #feed { margin-top:2rem; max-width:600px; margin:0 auto; }
     .secret-item { background:#111; padding:1rem; margin-bottom:1rem; border-radius:.5rem; opacity:0; animation:fadeIn .5s forwards; }
     @keyframes fadeIn { to { opacity:1; } }
+    /* Custom overlay popup */
+    #randomOverlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); justify-content:center; align-items:center; z-index:30000; }
+    #randomOverlay .popup { background:#111; padding:2rem; border-radius:.5rem; max-width:80%; color:#fff; position:relative; text-align:center; }
+    #randomOverlay .popup button { position:absolute; top:0.5rem; right:0.5rem; background:none; border:none; color:#fff; font-size:1.5rem; }
     footer { background:#111; color:#888; text-align:center; padding:.5rem 0; position:fixed; bottom:0; width:100%; }
   </style>
 </head>
@@ -61,18 +65,11 @@
     <div id="feed"></div>
   </div>
 
-  <!-- Random Secret Modal -->
-  <div class="modal fade" id="randomModal" tabindex="-1" role="dialog" aria-labelledby="randomModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-      <div class="modal-content bg-dark text-white">
-        <div class="modal-header">
-          <h5 class="modal-title" id="randomModalLabel">Secret of the Moment</h5>
-          <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body" id="randomContent"></div>
-      </div>
+  <!-- Custom Random Secret Overlay -->
+  <div id="randomOverlay">
+    <div class="popup">
+      <button id="overlayClose" aria-label="Close popup">&times;</button>
+      <p id="overlayContent"></p>
     </div>
   </div>
 
@@ -80,12 +77,12 @@
   <footer>© 2025 Anonymous Secrets — We don’t store IPs. Promise.</footer>
 
   <!-- Bootstrap & Dependencies JS -->
-  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+  <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha384-tsQFqpERiu2MYOGa+..." crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
   <script src="https://use.fontawesome.com/releases/v5.6.3/js/all.js" integrity="sha384-XYZ" crossorigin="anonymous"></script>
 
-  <!-- Firebase v11 Modular SDK -->
+  <!-- Firebase v11 Modular SDK & Interaction JS -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-app.js";
     import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-database.js";
@@ -113,6 +110,9 @@
     const categorySelect = document.getElementById('categorySelect');
     const filterSelect = document.getElementById('filterSelect');
     const allSecrets = [];
+    const overlay = document.getElementById('randomOverlay');
+    const overlayContent = document.getElementById('overlayContent');
+    const overlayClose = document.getElementById('overlayClose');
 
     function addSecretToFeed(s) {
       const div = document.createElement('div');
@@ -121,18 +121,21 @@
       feedEl.prepend(div);
     }
 
+    // Real-time listener
     onChildAdded(secretsRef, snapshot => {
       const s = snapshot.val();
       allSecrets.push(s);
       if (filterSelect.value === 'all' || s.category === filterSelect.value) addSecretToFeed(s);
     });
 
+    // Character counter & submit enable
     textEl.addEventListener('input', () => {
       const len = textEl.value.length;
       charCount.textContent = `${len}/3000`;
       submitBtn.disabled = !textEl.value.trim();
     });
 
+    // Form submit
     document.getElementById('secretForm').addEventListener('submit', e => {
       e.preventDefault();
       const text = textEl.value.trim();
@@ -144,6 +147,7 @@
       submitBtn.disabled = true;
     });
 
+    // Filter handler
     filterSelect.addEventListener('change', () => {
       feedEl.innerHTML = '';
       allSecrets.forEach(s => {
@@ -151,12 +155,14 @@
       });
     });
 
+    // Random Secret overlay logic
     document.getElementById('randomBtn').addEventListener('click', () => {
       if (!allSecrets.length) return;
       const rand = allSecrets[Math.floor(Math.random() * allSecrets.length)];
-      document.getElementById('randomContent').textContent = rand.text;
-      $('#randomModal').modal('show');
+      overlayContent.textContent = rand.text;
+      overlay.style.display = 'flex';
     });
+    overlayClose.addEventListener('click', () => overlay.style.display = 'none');
   </script>
 </body>
 </html>
