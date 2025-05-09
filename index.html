@@ -112,6 +112,20 @@
 
     let lastSnapshot = null;
 
+    function updateSubmitState() {
+  const hasText = !!textEl.value.trim();
+  const hasCat  = !!categoryEl.value;
+  submitBtn.disabled = !(hasText && hasCat);
+}
+
+// hook up events
+textEl.addEventListener('input', () => {
+  charCount.textContent = `${textEl.value.length}/3000`;
+  updateSubmitState();
+});
+categoryEl.addEventListener('change', updateSubmitState);
+
+    
     function renderSnapshot() {
       feedEl.innerHTML = '';
       if (!lastSnapshot) return;
