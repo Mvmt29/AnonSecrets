@@ -3,7 +3,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Anonymous Secrets: Share your thoughts anonymously and read others' secrets.">
   <title>Anonymous Secrets</title>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css?family=Indie+Flower|Oswald&display=swap" rel="stylesheet">
   <!-- Bootstrap CSS -->
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6UEF1jW9W0pXw3YfCvH+gfjtka4WueNG2QFJW8WZUDnN97XCdF" crossorigin="anonymous">
   <style>
@@ -12,34 +15,36 @@
       margin: 0;
       background-color: #000;
       color: #fff;
-      text-align: center;
-      display: flex;
-      flex-direction: column;
+      font-family: 'Oswald', sans-serif;
     }
-    /* Center content vertically and horizontally */
-    .content {
-      flex: 1;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-    }
-    /* Style form input */
-    input[type="text"] {
+    .navbar { justify-content: center; }
+    .content { text-align: center; padding: 2rem; }
+    h2 { font-family: 'Indie Flower', cursive; margin-bottom: 1rem; }
+    textarea {
       background-color: #222;
       color: #fff;
       border: 1px solid #555;
       padding: .5rem;
-      margin-top: .5rem;
       width: 100%;
-      max-width: 300px;
+      max-width: 500px;
+      resize: vertical;
+      transition: border-color .3s;
     }
-    input[type="text"]::placeholder {
+    textarea:focus { border-color: #888; outline: none; }
+    .btn-outline-light { transition: transform .2s; }
+    .btn-outline-light:hover { transform: scale(1.05); }
+    #charCount { display: block; margin-top: .5rem; }
+    #feed { margin-top: 2rem; max-width: 600px; margin-left: auto; margin-right: auto; }
+    .secret-item { background: #111; padding: 1rem; margin-bottom: 1rem; border-radius: .5rem; opacity: 0; animation: fadeIn 0.5s forwards; }
+    @keyframes fadeIn { to { opacity: 1; } }
+    footer {
+      background: #111;
       color: #888;
-    }
-    /* Navbar brand centered */
-    .navbar {
-      justify-content: center;
+      text-align: center;
+      padding: .5rem 0;
+      position: fixed;
+      bottom: 0;
+      width: 100%;
     }
   </style>
 </head>
@@ -52,17 +57,118 @@
   <!-- MAIN CONTENT -->
   <div class="content container">
     <h2>Anonymous Secrets</h2>
-    <form>
-      <label for="fname">Share Your Thoughts:</label><br>
-      <input type="text" id="fname" name="fname" placeholder="Type here...">
+    <form id="secretForm" aria-label="Share your anonymous secret">
+      <label for="secretText">Share Your Thoughts:</label><br>
+      <textarea id="secretText" name="secretText" rows="3" maxlength="200" placeholder="Type here..."></textarea>
+      <span id="charCount" aria-live="polite">0/200</span>
+      <label for="categorySelect" class="sr-only">Category</label>
+      <select id="categorySelect" class="form-control form-control-sm mb-2" style="display:inline-block; width:auto;" aria-label="Select category">
+        <option value="general">#general</option>
+        <option value="love">#love</option>
+        <option value="regret">#regret</option>
+        <option value="dream">#dream</option>
+      </select>
+      <button type="submit" id="submitBtn" class="btn btn-outline-light ml-2" disabled>Submit</button>
+      <button type="button" id="randomBtn" class="btn btn-outline-light ml-2">Random Secret</button>
     </form>
+
+    <!-- Filter -->
+    <div class="mt-4">
+      <label for="filterSelect">Filter by category:</label>
+      <select id="filterSelect" class="form-control form-control-sm d-inline-block ml-2" style="width:auto;" aria-label="Filter secrets by category">
+        <option value="all">All</option>
+        <option value="general">#general</option>
+        <option value="love">#love</option>
+        <option value="regret">#regret</option>
+        <option value="dream">#dream</option>
+      </select>
+    </div>
+
+    <!-- Secret Feed -->
+    <div id="feed"></div>
+  </div>
+
+  <!-- Random Secret Modal -->
+  <div class="modal fade" id="randomModal" tabindex="-1" role="dialog" aria-labelledby="randomModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content bg-dark text-white">
+        <div class="modal-header">
+          <h5 class="modal-title" id="randomModalLabel">Secret of the Moment</h5>
+          <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body" id="randomContent"></div>
+      </div>
+    </div>
   </div>
 
   <!-- SCRIPTS -->
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
-  <!-- Font Awesome -->
   <script src="https://use.fontawesome.com/releases/v5.6.3/js/all.js" integrity="sha384-XYZ" crossorigin="anonymous"></script>
+  <script>
+    // Load saved input
+    const textEl = document.getElementById('secretText');
+    const charCount = document.getElementById('charCount');
+    const submitBtn = document.getElementById('submitBtn');
+    const feedEl = document.getElementById('feed');
+    const categorySelect = document.getElementById('categorySelect');
+    const filterSelect = document.getElementById('filterSelect');
+    let secrets = JSON.parse(localStorage.getItem('secrets')) || [];
+
+    function updateFeed() {
+      feedEl.innerHTML = '';
+      const filter = filterSelect.value;
+      secrets.filter(s => filter === 'all' || s.category === filter)
+             .forEach(s => {
+        const div = document.createElement('div');
+        div.className = 'secret-item';
+        div.innerHTML = `<small>${s.category}</small><p>${s.text}</p>`;
+        feedEl.prepend(div);
+      });
+    }
+
+    // Initialize feed
+    updateFeed();
+
+    // Load saved draft
+    textEl.value = localStorage.getItem('draft') || '';
+    charCount.textContent = `${textEl.value.length}/200`;
+    submitBtn.disabled = !textEl.value.trim();
+
+    textEl.addEventListener('input', () => {
+      const len = textEl.value.length;
+      charCount.textContent = `${len}/200`;
+      localStorage.setItem('draft', textEl.value);
+      submitBtn.disabled = !textEl.value.trim();
+    });
+
+    document.getElementById('secretForm').addEventListener('submit', e => {
+      e.preventDefault();
+      const text = textEl.value.trim();
+      if (!text) return;
+      const secret = { text, category: categorySelect.value };
+      secrets.push(secret);
+      localStorage.setItem('secrets', JSON.stringify(secrets));
+      textEl.value = '';
+      localStorage.removeItem('draft');
+      charCount.textContent = '0/200';
+      submitBtn.disabled = true;
+      updateFeed();
+    });
+
+    // Random secret
+    document.getElementById('randomBtn').addEventListener('click', () => {
+      if (!secrets.length) return;
+      const rand = secrets[Math.floor(Math.random() * secrets.length)];
+      document.getElementById('randomContent').textContent = rand.text;
+      $('#randomModal').modal('show');
+    });
+
+    // Filter change
+    filterSelect.addEventListener('change', updateFeed);
+  </script>
 </body>
 </html>
