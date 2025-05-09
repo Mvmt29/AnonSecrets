@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Anonymous Secrets: Share and view anonymous posts in real-time.">
+  <meta name="description" content="Anonymous Secrets: Share and view anonymous posts.">
   <title>Anonymous Secrets</title>
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css?family=Indie+Flower|Oswald&display=swap" rel="stylesheet">
@@ -79,6 +79,12 @@
   <!-- Footer -->
   <footer>© 2025 Anonymous Secrets — We don’t store IPs. Promise.</footer>
 
+  <!-- Bootstrap & Dependencies JS -->
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+  <script src="https://use.fontawesome.com/releases/v5.6.3/js/all.js" integrity="sha384-XYZ" crossorigin="anonymous"></script>
+
   <!-- Firebase v11 Modular SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-app.js";
@@ -115,21 +121,18 @@
       feedEl.prepend(div);
     }
 
-    // Real-time listener
     onChildAdded(secretsRef, snapshot => {
       const s = snapshot.val();
       allSecrets.push(s);
       if (filterSelect.value === 'all' || s.category === filterSelect.value) addSecretToFeed(s);
     });
 
-    // Character counter & submit enable
     textEl.addEventListener('input', () => {
       const len = textEl.value.length;
       charCount.textContent = `${len}/3000`;
       submitBtn.disabled = !textEl.value.trim();
     });
 
-    // Form submit
     document.getElementById('secretForm').addEventListener('submit', e => {
       e.preventDefault();
       const text = textEl.value.trim();
@@ -141,7 +144,6 @@
       submitBtn.disabled = true;
     });
 
-    // Filter handler
     filterSelect.addEventListener('change', () => {
       feedEl.innerHTML = '';
       allSecrets.forEach(s => {
@@ -149,7 +151,6 @@
       });
     });
 
-    // Random Secret button
     document.getElementById('randomBtn').addEventListener('click', () => {
       if (!allSecrets.length) return;
       const rand = allSecrets[Math.floor(Math.random() * allSecrets.length)];
@@ -157,10 +158,5 @@
       $('#randomModal').modal('show');
     });
   </script>
-  <!-- Bootstrap & FontAwesome JS -->
-  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
-  <script src="https://use.fontawesome.com/releases/v5.6.3/js/all.js" integrity="sha384-XYZ" crossorigin="anonymous"></script>
 </body>
 </html>
