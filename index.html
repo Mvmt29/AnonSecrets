@@ -156,7 +156,7 @@
           const div = document.createElement('div');
           div.className = 'secret-item';
           div.innerHTML = `<small>#${s.category}</small><p>${s.text}</p>`;
-          feedEl.prepend(div);
+          feedEl.append(div);
         }
       });
     }
