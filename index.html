@@ -123,7 +123,7 @@
     overlay.style.display = 'none';
 
     // Your Heroku backend URL
-    const HEROKU_BASE = 'https://anonsecrets-38dfd4860c4d.herokuapp.com/';
+    const HEROKU_BASE = 'https://anonsecrets-38dfd4860c4d.herokuapp.com';
     const API_BASE    = `${HEROKU_BASE}/api/secrets`;
 
     // Enable submit when both text and category are present
@@ -141,7 +141,7 @@
     // Fetch and render secrets
     async function fetchSecrets() {
       try {
-        const res = await fetch(`${API_BASE}?limit=10`);
+        const res = await fetch(`${API_BASE}?limit=10`, { mode: 'cors' });
         allSecrets = await res.json();
         renderSecrets();
       } catch (err) {
