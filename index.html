@@ -49,7 +49,7 @@
 <body>
   <!-- Navbar -->
   <nav class="navbar navbar-expand-lg navbar-dark">
-    <a class="navbar-brand" href="index.html">
+    <a class="navbar-brand" href="/">
       <i class="fas fa-theater-masks"></i>
     </a>
   </nav>
@@ -101,9 +101,9 @@
 
   <!-- Footer -->
   <footer>
-    <a href="about.html"><i class="fas fa-theater-masks"></i> About</a>
-    <a href="TOSPP.html"></i> Terms and Privacy </a>
-    <a href="contact.html"></i> Contact </a>
+    <a href="/about"><i class="fas fa-theater-masks"></i> About</a>
+    <a href="/terms">Terms and Privacy</a>
+    <a href="/contact">Contact</a>
     <span>© 2025 Anonymous Secrets.</span>
   </footer>
 
@@ -111,38 +111,8 @@
   <script src="https://code.jquery.com/jquery-3.3.1.min.js" crossorigin="anonymous"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" crossorigin="anonymous"></script>
 
-  <!-- Firebase + Interaction -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-app.js";
-    import {
-      getDatabase,
-      ref,
-      push,
-      query,
-      limitToLast,
-      orderByChild,
-      equalTo,
-      onValue,
-      get
-    } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-database.js";
-
-    // Firebase config
-    const firebaseConfig = {
-      apiKey: "AIzaSyC9VD0yfCty_-8d14h5iiYvJzBZruorm70",
-      authDomain: "project-null-391f8.firebaseapp.com",
-      databaseURL: "https://project-null-391f8-default-rtdb.firebaseio.com",
-      projectId: "project-null-391f8",
-      storageBucket: "project-null-391f8.appspot.com",
-      messagingSenderId: "852946524190",
-      appId: "1:852946524190:web:d93f7bdead51ea932a760f"
-    };
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    // References & queries
-    const secretsRef   = ref(db, 'secrets');
-    const lastTenQuery = query(secretsRef, limitToLast(10));
-
+  <!-- Backend Integration -->
+  <script>
     // DOM elements
     const feedEl         = document.getElementById('feed');
     const textEl         = document.getElementById('secretText');
@@ -153,12 +123,13 @@
     const overlay        = document.getElementById('randomOverlay');
     const overlayContent = document.getElementById('overlayContent');
     const overlayClose   = document.getElementById('overlayClose');
-    let lastSnapshot     = null;
+    let allSecrets       = [];
 
-    // Ensure overlay is hidden on load
-    overlay.style.display = 'none';
+    // Your Heroku backend URL
+    const HEROKU_BASE = 'https://anonsecrets-38dfd4860c4d.herokuapp.com/';
+    const API_BASE   = `${HEROKU_BASE}/api/secrets`;
 
-    // Submit‐enable logic
+    // Enable submit when both text and category are present
     function updateSubmitState() {
       const hasText = !!textEl.value.trim();
       const hasCat  = !!categoryEl.value;
@@ -170,56 +141,71 @@
     });
     categoryEl.addEventListener('change', updateSubmitState);
 
-    // Render live feed
-    function renderSnapshot() {
+    // Fetch and render secrets
+    async function fetchSecrets() {
+      try {
+        const res = await fetch(`${API_BASE}?limit=10`);
+        allSecrets = await res.json();
+        renderSecrets();
+      } catch (err) {
+        console.error('Failed to load secrets', err);
+      }
+    }
+
+    function renderSecrets() {
       feedEl.innerHTML = '';
-      if (!lastSnapshot) return;
-      lastSnapshot.forEach(childSnap => {
-        const s = childSnap.val();
+      allSecrets.forEach(s => {
         if (filterSelect.value === 'all' || s.category === filterSelect.value) {
           const div = document.createElement('div');
           div.className = 'secret-item';
-          div.innerHTML = `<small>${s.category}</small><p>${s.text}</p>`;
+          div.innerHTML = `<small>#${s.category}</small><p>${s.text}</p>`;
           feedEl.prepend(div);
         }
       });
     }
-    onValue(lastTenQuery, snapshot => {
-      lastSnapshot = snapshot;
-      renderSnapshot();
-    });
 
-    // Handle new submissions
+    // Initial load
+    fetchSecrets();
+
+    // Handle new submission
     document.getElementById('secretForm').addEventListener('submit', async e => {
       e.preventDefault();
       const text = textEl.value.trim();
       const cat  = categoryEl.value;
       if (!text || !cat) return;
-      await push(secretsRef, { text, category: cat, createdAt: Date.now() });
-      textEl.value = '';
-      charCount.textContent = '0/3000';
-      categoryEl.value = '';
-      updateSubmitState();
+      try {
+        await fetch(API_BASE, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text, category: cat })
+        });
+        textEl.value = '';
+        charCount.textContent = '0/3000';
+        categoryEl.value = '';
+        updateSubmitState();
+        fetchSecrets();
+      } catch (err) {
+        console.error('Submit failed', err);
+      }
     });
 
-    // Filter changes
-    filterSelect.addEventListener('change', renderSnapshot);
+    // Filter change
+    filterSelect.addEventListener('change', renderSecrets);
 
-    // Random secret from full DB
+    // Random secret
     document.getElementById('randomBtn').addEventListener('click', async () => {
-      const snap = await get(secretsRef);
-      const data = snap.val();
-      if (!data) return;
-      const all = Object.values(data);
-      const rand = all[Math.floor(Math.random() * all.length)];
-      overlayContent.textContent = rand.text;
-      overlay.style.display = 'flex';
+      try {
+        const res = await fetch(`${HEROKU_BASE}/api/secrets/random`);
+        const rand = await res.json();
+        overlayContent.textContent = rand.text;
+        overlay.style.display = 'flex';
+      } catch (err) {
+        console.error('Failed to load random secret', err);
+      }
     });
 
     // Close overlay
     overlayClose.addEventListener('click', () => {
       overlay.style.display = 'none';
     });
-  </script>
-</body>
-</html>
+  <
