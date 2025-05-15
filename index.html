@@ -171,11 +171,16 @@
       const cat  = categoryEl.value;
       if (!text || !cat) return;
       try {
-        await fetch(API_BASE, {
+        const res = await fetch(API_BASE, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ text, category: cat })
         });
+        if (res.status === 400) {
+          const { error } = await res.json();
+          return alert(error);
+        }
+        if (!res.ok) throw new Error('Server error');
         textEl.value = '';
         charCount.textContent = '0/3000';
         categoryEl.value = '';
@@ -183,6 +188,7 @@
         fetchSecrets();
       } catch (err) {
         console.error('Submit failed', err);
+        alert('Sorry, something went wrong.');
       }
     });
 
