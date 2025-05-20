@@ -1,38 +1,11 @@
-Anonymous Secrets
+# Anonymous Secrets
 
-Simple anonymous posting app with:
+A place to share and read true, unfiltered stories—completely anonymous.
 
-Express + Heroku backend for secure writes & filtering
+- Post or browse secrets in #general, #love, #regret, and #dream.  
+- Instant updates & random secret surprises.  
+- Automatic filtering keeps the community safe.
 
-Firebase Realtime DB for fast, client-side reads
+💡 **Want to contribute?** Visit our GitHub repo to suggest features or report issues.
 
-bad-words filter blocks hateful slurs
-
-Rate limiting for abuse protection
-
-Setup
-
-Backend (in backend/):
-
-npm install
-heroku create <app-name>
-git push heroku main
-
-Frontend (in frontend/):
-
-Point to your Firebase config in <script>
-
-Deploy on GitHub Pages or similar
-
-Firebase Rules
-
-{
-  "secrets": { ".read": true, ".write": false }
-}
-
-Usage
-
-Client uses onValue() to auto-refresh
-
-All writes go through /api/secrets on Heroku
-
+© 2025 Anonymous Secrets
